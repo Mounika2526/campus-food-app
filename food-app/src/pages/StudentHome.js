@@ -455,6 +455,12 @@ const saveFavoriteOrder = async () => {
     <div className="dashboard-background"></div>
     <div className="background-overlay"></div>
     <div className="app-overlay">
+    {sidebarOpen && (
+    <div
+      className="sidebar-overlay"
+      onClick={() => setSidebarOpen(false)}
+    />
+  )}
     <Sidebar
   isOpen={sidebarOpen}
   onClose={() => setSidebarOpen(false)}
@@ -472,7 +478,8 @@ const saveFavoriteOrder = async () => {
                 background: "none",
                 border: "none",
                 color: "#f1c40f",
-                cursor: "pointer",}}
+                cursor: "pointer",
+                zIndex: 9999}}
             >
               ☰
             </button>
