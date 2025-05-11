@@ -49,7 +49,8 @@ app.get("/vendor/:id", async (req, res) => {
 // ✅ GET vendor by ownerId (for restaurant login)
 app.get("/vendor/owner/:ownerId", async (req, res) => {
   try {
-    const vendor = await Vendor.findOne({ ownerId: req.params.ownerId });
+    const ownerId = parseInt(req.params.ownerId); // 🔧 convert to number
+    const vendor = await Vendor.findOne({ ownerId }); // ✅ use number
     if (!vendor) return res.status(404).json({ message: "Vendor not found" });
     res.json(vendor);
   } catch (err) {
@@ -170,7 +171,41 @@ app.put("/vendor/:id/menu/:itemId/todays-special", async (req, res) => {
   }
 });
 
+// ✅ POST /vendor/create - Automatically create vendor profile on signup
+app.post("/vendor/create", async (req, res) => {
+  try {
+    const { ownerId, name, address, hours } = req.body;
+
+    if (!ownerId || !name) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Prevent duplicate vendor entries
+    const existing = await Vendor.findOne({ ownerId });
+    if (existing) {
+      return res.status(400).json({ message: "Vendor already exists for this owner." });
+    }
+
+    const newVendor = new Vendor({
+      ownerId,
+      name,
+      address: address || "Default Block",
+      hours: hours || "09:00 AM – 09:00 PM",
+      menu: [],
+      avgRating: "0.0"
+    });
+
+    const saved = await newVendor.save();
+    res.status(201).json({ message: "Vendor profile created", vendor: saved });
+  } catch (err) {
+    console.error("❌ Error creating vendor:", err);
+    res.status(500).json({ message: "Error creating vendor", error: err.message });
+  }
+});
+
+
 // Start server
 app.listen(port, () => {
   console.log(`🚀 Vendor service running at http://localhost:${port}`);
 });
+
